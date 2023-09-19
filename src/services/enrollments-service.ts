@@ -9,18 +9,14 @@ import { request } from '@/utils/request';
 import { exclude } from '@/utils/prisma-utils';
 import extractType from '@/utils/extractType';
 
-// TODO - Receber o CEP por parâmetro nesta função.
 async function getAddressFromCEP(cep: string): Promise<CepInfo> {
-  // FIXME: está com CEP fixo! --> Done
   const result = await requestCep(cep);
 
-  // TODO: Tratar regras de negócio e lanças eventuais erros --> Done
   if (result?.data?.erro) {
     throw requestError(400, 'CEP not found');
   }
   result.data.cidade = result.data.localidade;
   delete result.data.localidade;
-  // FIXME: não estamos interessados em todos os campos --> Done
   const response: CepInfo = extractType<CepInfo>(result.data as CepInfo, [
     'logradouro',
     'complemento',
@@ -69,7 +65,6 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   enrollment.birthday = new Date(enrollment.birthday);
   const address = getAddressForUpsert(params.address);
 
-  // TODO - Verificar se o CEP é válido antes de associar ao enrollment. --> Done
   const response: AxiosResponse = await requestCep(params.address.cep); //If cep is not valid, error will be thrown
   if (response?.data.erro) {
     throw requestError(400, 'CEP not valid');
