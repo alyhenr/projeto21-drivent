@@ -1,9 +1,9 @@
 import { Enrollment } from '@prisma/client';
-import { findByUserId, findTypes, enrollmentRepository, createTicket } from '@/repositories';
+import { ticketsRepositories, enrollmentRepository } from '@/repositories';
 import { notFoundError } from '@/errors';
 
-export function getByUserId(userId: number): Promise<UserTickets[]> | null {
-  return findByUserId(userId);
+function getByUserId(userId: number): Promise<UserTickets[]> | null {
+  return ticketsRepositories.findByUserId(userId);
 }
 
 export type UserTickets = {
@@ -16,8 +16,8 @@ export type UserTickets = {
   updatedAt: Date;
 };
 
-export function getByType(): Promise<TicketType[]> {
-  return findTypes();
+function getByType(): Promise<TicketType[]> {
+  return ticketsRepositories.findTypes();
 }
 
 export type TicketType = {
@@ -30,16 +30,22 @@ export type TicketType = {
   updatedAt: Date;
 };
 
-export async function reserveTicket(userId: number, ticketTypeId: number): Promise<UserTickets> {
+async function reserveTicket(userId: number, ticketTypeId: number): Promise<UserTickets> {
   const enrollment: Enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
 
   if (!enrollment) throw notFoundError();
 
-  await createTicket(enrollment.id, ticketTypeId);
+  await ticketsRepositories.createTicket(enrollment.id, ticketTypeId);
 
-  return (await findByUserId(userId))[0];
+  return (await ticketsRepositories.findByUserId(userId))[0];
 }
 
 export type TicketReservation = {
   ticketTypeId: number;
+};
+
+export const ticketsService = {
+  getByUserId,
+  getByType,
+  reserveTicket,
 };
