@@ -1,8 +1,7 @@
 import { Payment } from '@prisma/client';
-import { UserTickets } from './tickets-service';
 import { paymentsRepository } from '@/repositories/payments-repository';
 import { ticketsRepositories } from '@/repositories';
-import { invalidDataError, notFoundError, unauthorizedError } from '@/errors';
+import { notFoundError, unauthorizedError } from '@/errors';
 
 async function getPayments(ticketId: number, userId: number): Promise<Payment> {
   const ticket = await ticketsRepositories.findById(ticketId);
