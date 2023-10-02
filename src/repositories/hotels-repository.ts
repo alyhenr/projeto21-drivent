@@ -1,4 +1,4 @@
-import { Hotel, Room } from '@prisma/client';
+import { Hotel } from '@prisma/client';
 import { prisma } from '@/config';
 
 async function findHotels(): Promise<Omit<Hotel, 'Rooms'>[]> {
@@ -12,9 +12,9 @@ async function findHotels(): Promise<Omit<Hotel, 'Rooms'>[]> {
   }));
 }
 
-async function findHotelRooms(id: number): Promise<Room[]> {
-  return await prisma.room.findMany({
-    where: { hotelId: id },
+async function findHotelRooms(id: number): Promise<Hotel> {
+  return await prisma.hotel.findUnique({
+    where: { id },
   });
 }
 
