@@ -15,6 +15,7 @@ async function findHotels(): Promise<Omit<Hotel, 'Rooms'>[]> {
 async function findHotelRooms(id: number): Promise<Hotel> {
   return await prisma.hotel.findUnique({
     where: { id },
+    include: { Rooms: true },
   });
 }
 

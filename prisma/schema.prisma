@@ -123,7 +123,7 @@ model Room {
   name      String
   capacity  Int
   hotelId   Int
-  Hotel     Hotel     @relation(fields: [hotelId], references: [id])
+  Hotel     Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   Booking   Booking[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
