@@ -309,4 +309,46 @@ describe('GET /hotels/:hotelId', () => {
       }),
     );
   });
+
+  it('Should send the right amount of rooms for the given hotelId', async () => {
+    const user = await createUser();
+    const token = await generateValidToken(user);
+    const enrollment = await createEnrollmentWithAddress(user);
+    const ticketType = await createTicketType(false, true);
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+    const hotel = await createHotels(1);
+    await createRooms(7, hotel[0].id);
+
+    const response = await server.get(`/hotels/${hotel[0].id}`).set('Authorization', `Bearer ${token}`);
+
+    expect(response.body.Rooms).toHaveLength(7);
+  });
+
+  it('Should send the right amount of rooms for the given hotelId', async () => {
+    const user = await createUser();
+    const token = await generateValidToken(user);
+    const enrollment = await createEnrollmentWithAddress(user);
+    const ticketType = await createTicketType(false, true);
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+    const hotel = await createHotels(1);
+    await createRooms(7, hotel[0].id);
+
+    const response = await server.get(`/hotels/${hotel[0].id}`).set('Authorization', `Bearer ${token}`);
+
+    expect(response.body.Rooms).toHaveLength(7);
+  });
+
+  it('Should send an empty array foor the Rooms property when the hotel does not have any', async () => {
+    const user = await createUser();
+    const token = await generateValidToken(user);
+    const enrollment = await createEnrollmentWithAddress(user);
+    const ticketType = await createTicketType(false, true);
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+    const hotel = await createHotels(1);
+
+    const response = await server.get(`/hotels/${hotel[0].id}`).set('Authorization', `Bearer ${token}`);
+
+    expect(Array.isArray(response.body.Rooms)).toEqual(true);
+    expect(response.body.Rooms).toHaveLength(0);
+  });
 });
