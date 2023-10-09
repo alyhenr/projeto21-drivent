@@ -5,14 +5,13 @@ import { notFoundError } from '@/errors';
 import { paymentRequired } from '@/errors/payment-required';
 import { hotelsRepository } from '@/repositories/hotels-repository';
 
-const checkIfTicketIsValid = async (userId: number): Promise<UserTickets> => {
+export const checkIfTicketIsValid = async (userId: number, error = paymentRequired()): Promise<UserTickets> => {
   const tickets: UserTickets[] = await ticketsRepositories.findByUserId(userId);
   if (!tickets || tickets.length === 0) throw notFoundError();
 
   const ticket: UserTickets = tickets[0];
 
-  if (ticket.status !== 'PAID' || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel)
-    throw paymentRequired();
+  if (ticket.status !== 'PAID' || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) throw error;
 
   return ticket;
 };
