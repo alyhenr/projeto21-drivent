@@ -189,7 +189,7 @@ describe('changeRoom', () => {
   it('should throw a notFoundError when room does not exist', async () => {
     jest.spyOn(bookingRepository, 'findRoom').mockResolvedValueOnce(null);
 
-    const response = bookingService.changeRoom(userId, roomId);
+    const response = bookingService.changeRoom(userId, roomId, bookingId);
     expect(response).rejects.toEqual(notFoundError());
   });
 
@@ -197,8 +197,21 @@ describe('changeRoom', () => {
     jest.spyOn(bookingRepository, 'findRoom').mockResolvedValueOnce(mockRoom());
     jest.spyOn(bookingRepository, 'findByUserId').mockResolvedValueOnce(null);
 
-    const response = bookingService.changeRoom(userId, roomId);
+    const response = bookingService.changeRoom(userId, roomId, bookingId);
     expect(response).rejects.toEqual(forbiddenError("User don't have any reservation!"));
+  });
+
+  it('should throw a forbiddenError when bookingId found from userId does not match bookingId provided', async () => {
+    const randomCapacity = Math.floor((Math.random() + 0.1) * 10);
+    const room: Room = mockRoom(roomId, randomCapacity);
+    jest.spyOn(bookingRepository, 'findRoom').mockResolvedValueOnce(room);
+    jest.spyOn(bookingRepository, 'findByUserId').mockResolvedValueOnce({
+      id: bookingId,
+      Room: mockRoom(roomId),
+    });
+
+    const response = bookingService.changeRoom(userId, roomId, bookingId + faker.datatype.number({ min: 1 }));
+    expect(response).rejects.toEqual(forbiddenError("bookingId provided does match user's bookingId"));
   });
 
   it('should throw a forbiddenError when user is trying to change for a room that is already full', async () => {
@@ -209,14 +222,14 @@ describe('changeRoom', () => {
       Room: room,
     });
 
-    jest.spyOn(bookingRepository, 'findRoom').mockResolvedValueOnce(mockRoom());
+    jest.spyOn(bookingRepository, 'findRoom').mockResolvedValueOnce(room);
     jest.spyOn(bookingRepository, 'findByUserId').mockResolvedValueOnce({
       id: bookingId,
-      Room: mockRoom(roomId),
+      Room: mockRoom(roomId + Number(faker.random.numeric())),
     });
     jest.spyOn(bookingRepository, 'findBookingsByRoomId').mockResolvedValueOnce(bookings);
 
-    const response = bookingService.changeRoom(userId, roomId);
+    const response = bookingService.changeRoom(userId, roomId, bookingId);
     expect(response).rejects.toEqual(forbiddenError('This room is already full.'));
   });
 
@@ -236,7 +249,7 @@ describe('changeRoom', () => {
       updatedAt: new Date(faker.date.past().toISOString()),
     });
 
-    const response = await bookingService.changeRoom(userId, roomId);
+    const response = await bookingService.changeRoom(userId, roomId, bookingId);
     expect(response).toEqual(
       expect.objectContaining<Booking>({
         id: expect.any(Number),
